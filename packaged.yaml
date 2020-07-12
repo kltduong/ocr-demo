@@ -8,11 +8,11 @@ Resources:
     Properties:
       Handler: src/app.lambda_handler
       Runtime: python3.6
-      CodeUri: s3://codedeploy-sam-deployment/44167c750aeb91a7b93adfd60199868f
+      CodeUri: s3://codedeploy-sam-deployment/ed18c218eb0862963ea2e8f18cfde868
       Description: Uses Rekognition APIs to detect text in S3 Objects and stores the
         text and labels in DynamoDB.
       MemorySize: 256
-      Timeout: 45
+      Timeout: 60
       Environment:
         Variables:
           TABLE_NAME:
