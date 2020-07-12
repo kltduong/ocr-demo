@@ -1,43 +1,40 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: SAM app that uses Rekognition APIs to detect text in S3 Objects and stores
   labels in DynamoDB.
 Resources:
   DetectTextInImage:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://ej-mw-us-west-2/6ffdd3ccd55798b12fa070eacc9738f2
+      Handler: src/app.lambda_handler
+      Runtime: python3.6
+      CodeUri: s3://codedeploy-sam-deployment/44167c750aeb91a7b93adfd60199868f
       Description: Uses Rekognition APIs to detect text in S3 Objects and stores the
         text and labels in DynamoDB.
+      MemorySize: 256
+      Timeout: 45
       Environment:
         Variables:
           TABLE_NAME:
             Ref: ResultsTable
-      Events:
-        BucketEvent1:
-          Properties:
-            Bucket:
-              Ref: SourceImageBucket
-            Events:
-            - s3:ObjectCreated:*
-          Type: S3
-      Handler: src/app.lambda_handler
-      MemorySize: 512
       Policies:
-      - Statement:
-        - Action:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
           - s3:GetObject
-          Effect: Allow
           Resource: arn:aws:s3:::*
-        - Action:
+        - Effect: Allow
+          Action:
           - rekognition:DetectText
           - rekognition:DetectLabels
-          Effect: Allow
           Resource: '*'
-        - Action:
+        - Effect: Allow
+          Action:
           - dynamodb:GetItem
           - dynamodb:PutItem
           - dynamodb:Scan
           - dynamodb:UpdateItem
-          Effect: Allow
           Resource:
             Fn::Join:
             - ''
@@ -47,12 +44,15 @@ Resources:
               - Ref: AWS::AccountId
               - :table/
               - Ref: ResultsTable
-        Version: '2012-10-17'
-      Runtime: python3.6
-      Timeout: 30
-    Type: AWS::Serverless::Function
-  ResultsTable:
-    Type: AWS::Serverless::SimpleTable
+      Events:
+        BucketEvent1:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: SourceImageBucket
+            Events:
+            - s3:ObjectCreated:*
   SourceImageBucket:
     Type: AWS::S3::Bucket
-Transform: AWS::Serverless-2016-10-31
+  ResultsTable:
+    Type: AWS::Serverless::SimpleTable
